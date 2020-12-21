@@ -1,6 +1,6 @@
 ---
 title: "USGS North American Breeding Bird Survey Data (1966-2019) for Illinois "
-author: Alec Luro and Andrew Braxton
+author: Alec Luro
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -26,7 +26,7 @@ library(tidyr)
 
 # Import data and subset Illinois data -------------------------------------------------------------
 full_ill_data <-
-  readRDS("../data/complete_bbs_data.rds") %>%
+  readRDS("data/complete_bbs_data.rds") %>%
   lazy_dt %>% 
   filter(State == "ILLINOIS" & RunType == 1) %>% 
   na.omit
@@ -71,12 +71,6 @@ family_list <-
     unique() %>% 
     sort()
 
-# List of all unique routes in Illinois
-route_list <-
-  full_ill_data %>% 
-  pull(RouteName) %>% 
-  unique() %>% 
-  sort()
 ```
 
 Bird survey trends
@@ -220,54 +214,4 @@ ggtitle(
     
   })
 
-```
-
-Species Sightings by Route
-===================================== 
-
-Column {.sidebar}
------------------------------------------------------------------------
-
-### Species and Year
-
-```{r sidebar_routes}
-
-selectInput("species2", label = "Species", choices = species_list,
-            selected = "American Robin")
-#sliderInput("year2", label = "Year", min = 1966, max = 2019, value = 2019, sep = "")
-selectInput("routes", label = "Route", choices = route_list, multiple = TRUE, selectize = TRUE,
-            selected = route_list[1:10])
-
-```
-
-Column
------------------------------------------------------------------------
-
-### Bird Sightings by Route (from 2009-2019)
-
-```{r plot_route_data}
-
-# Set up route data before plotting
-route_data <-
-  reactive({
-    full_ill_data %>% 
-    filter(English_Common_Name == input$species2) %>% 
-    filter(Year %in% 2009:2019) %>% 
-    filter(RouteName %in% input$routes) %>% 
-    mutate(RouteName = as.factor(RouteName)) %>%
-    select(RouteName, Sightings = SpeciesTotal, Year) %>% 
-    as_tibble
-  })
-
-# Plot birds counted by route, filled by # sightings and in descending order by year
-renderPlot({
-  route_data() %>% 
-    ggplot(mapping = aes(x = reorder(RouteName, -Sightings), y = Sightings, fill = Sightings, group = reorder(Year, -Year))) +
-    geom_col() +
-    scale_fill_gradient(low = "red", high = "green") +
-    geom_text(aes(label = Year), position = position_stack(vjust = 0.5)) +
-    xlab("Route Location") +
-    ylab("Total Sightings") +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
-})
 ```
