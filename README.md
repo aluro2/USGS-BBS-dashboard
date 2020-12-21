@@ -26,12 +26,6 @@ This dashboard provides survey trend data for a chosen bird family or species ac
 
 + Users can select to see the survey counts for bird families, all species surveyed, or a species for a chosen range of survey years.
 
-### Species Sightings by Route
-![page2_functionality](Images/dashboard_route_page_functionality.gif)
-This dashboard page provides the number of birds sighted for a chosen species and route(s) surveyed in Illinois within the past 10-years, providing useful information about how common a given species has been for a route location.
-
-+ Users select the "Species Sightings by Route" tab on the navigation bar, and then can choose the species and route(s) they would like to get survey counts for.
-
 ### R environment
 ```
 > sessionInfo()
