@@ -1,11 +1,5 @@
 # Birds of Illinois Project
 
-## Deliverables
-- [Proposal](https://github.com/uofi-stat430/fa20-prj-alecl2-braxton3/blob/master/PROPOSAL.md) -- PROPOSAL.md
-- [Report](https://github.com/uofi-stat430/fa20-prj-alecl2-braxton3/blob/master/project_report/REPORT.html) -- project_report/REPORT.html (preferred) or project_report/REPORT.pdf
-- [Presentation](https://uofi.box.com/s/dzkbbwf7xoh0f67amzpf6v9f8p263nex) -- [slides](https://github.com/uofi-stat430/fa20-prj-alecl2-braxton3/blob/master/project_presentation/presentation_slides.html), [video](https://uofi.box.com/s/dzkbbwf7xoh0f67amzpf6v9f8p263nex)
-- [Peer Evaluation](https://github.com/uofi-stat430/fa20-prj-alecl2-braxton3/blob/master/PEER_EVAL.md) -- PEER_EVAL.md
-
 ## Overview
 Our project uses data from the [USGS North American Breeding Bird Survey](https://www.pwrc.usgs.gov/bbs/), a systematic survey of birds that has been ongoing since 1966, to assess long term population trends of birds found in Illinois. Graphical summaries of the survey data for the U.S. and Canada are provided by the [Patuxent Wildlife Research Center](https://www.mbr-pwrc.usgs.gov/). Here, we provide detailed graphical summaries of the bird survey population data for the state of Illinois using an [*R Shiny*](https://shiny.rstudio.com/) html dashboard using the [*flexdashboard*](https://rmarkdown.rstudio.com/flexdashboard/) R package. 
 
