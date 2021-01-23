@@ -1,5 +1,5 @@
 ---
-title: "USGS North American Breeding Bird Survey Data (1966-2019) for Illinois "
+title: "USGS North American Breeding Bird Survey Data (1966-2019)"
 author: Alec Luro
 output: 
   flexdashboard::flex_dashboard:
@@ -7,11 +7,11 @@ output:
     vertical_layout: fill
     source_code: embed
     theme: paper
-    logo: illinois_logo_48x48px.png
+    #logo: illinois_logo_48x48px.png
 runtime: shiny
 ---
 
-```{r setup, include=FALSE}
+```{r packages, include=FALSE}
 # Load packages -------------------------------------------------------------
 library(flexdashboard)
 library(shiny)
@@ -24,25 +24,61 @@ library(ggplot2)
 library(hrbrthemes)
 library(tidyr)
 
+```
+
+Bird survey trends
+===================================== 
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+<br>
+
+```{r input_state_survey_subset}
+
+# Choice of all U.S. or individual state
+# States Surveyed
+states <-
+  c("All States", "ALABAMA", "ALASKA", "ARIZONA", "ARKANSAS", "CALIFORNIA", "COLORADO", 
+"CONNECTICUT", "DELAWARE", "FLORIDA", "GEORGIA", "IDAHO", "ILLINOIS", 
+"INDIANA", "IOWA", "KANSAS", "KENTUCKY", "LOUISIANA", "MAINE", 
+"MARYLAND", "MASSACHUSETTS", "MICHIGAN", "MINNESOTA", "MISSISSIPPI", 
+"MISSOURI", "MONTANA", "NORTH CAROLINA", "NORTH DAKOTA", "NEBRASKA", 
+"NEVADA", "NEW HAMPSHIRE", "NEW JERSEY", "NEW MEXICO", "NEW YORK", 
+"OHIO", "OKLAHOMA", "OREGON", "PENNSYLVANIA", "RHODE ISLAND", 
+"SOUTH CAROLINA", "SOUTH DAKOTA", "TENNESSEE", "TEXAS", "UTAH", 
+"VERMONT", "VIRGINIA", "WEST VIRGINIA", "WASHINGTON", "WISCONSIN", 
+"WYOMING")
+
+selectInput("state_choice", label = "State",
+            choices =  states,
+            selected = "All States")
+
+```
+
+```{r survey_data, include=FALSE}
+
+
 # Import data and subset Illinois data -------------------------------------------------------------
-full_ill_data <-
-  readRDS("data/complete_bbs_data.rds") %>%
-  lazy_dt %>% 
-  filter(State == "ILLINOIS" & RunType == 1) %>% 
-  na.omit
+full_data <-
+    readRDS("data/complete_bbs_data.rds") %>%
+    lazy_dt %>%
+    filter(CountryNum == 840,
+           RunType == 1) %>% 
+    na.omit
+
 
 # Get number of unique routes completed per year
 routes_per_survey_year <-
-  full_ill_data %>%
+  full_data %>%
   group_by(Year) %>%
   summarise(
     routes_per_year = length(unique((RouteDataID))
     )) %>%
-  as_tibble()
+  as_tibble() 
 
 # Add survey counts weighted by number of routes completed for given year
-illinois_data <-
-  full_ill_data %>%
+full_data <-
+  full_data %>%
   group_by(Year, English_Common_Name, Family) %>%
   summarise(
     total_birds = sum(SpeciesTotal)
@@ -53,34 +89,29 @@ illinois_data <-
              by = "Year") %>% 
   mutate(weighted_total_birds = (total_birds/routes_per_year))
 
-# List of all species surveyed in Illinois
+# List of all species surveyed 
 species_list <-
-  illinois_data %>% 
+  full_data %>% 
   distinct(English_Common_Name) %>% 
   # drop unidentified birds
-  filter(!startsWith(English_Common_Name, "unid.")) %>% 
+  filter(!str_detect(English_Common_Name, "(?i)unid"),
+         !str_detect(English_Common_Name, "(?i)hybrid")) %>% 
   # remove aliases for cleaner sorting
   mutate(English_Common_Name = str_replace(English_Common_Name, " ?\\(.*\\) ?", "")) %>%
   arrange(English_Common_Name) %>% 
   pull(English_Common_Name)
 
-# List of all families surveyed in Illinois
+# List of all families surveyed 
 family_list <-
-  full_ill_data %>% 
+  full_data %>% 
     pull(Family) %>%  
     unique() %>% 
     sort()
 
 ```
 
-Bird survey trends
-===================================== 
+```{r input_survey_data_subset}
 
-Column {.sidebar}
------------------------------------------------------------------------
-<br>
-
-```{r species_survey_input}
 # Allow choice of Family or individual species
 selectInput("taxonomic_level", label = "Taxon",
             c(Family = "choice_family", Species = "choice_species"))
@@ -104,6 +135,7 @@ sliderInput("time_range", label = "Years:",
             min = 1966, max = 2019, value = c(1966,2019),
             sep = "")
 ```
+
 
 Column {data-width=200}
 -----------------------------------------------------------------------
@@ -166,10 +198,10 @@ plot_data <-
   reactive({
     # If selected Taxon == Species and input for species is not "All", filter data by selected single species
     if(input$taxonomic_level == "choice_species"){
-      {if (!input$species == "All species") filter(illinois_data, English_Common_Name == input$species) else illinois_data} 
+      {if (!input$species == "All species") filter(full_data, English_Common_Name == input$species) else full_data} 
     } else {
       # If selected Taxon ==  Family, filter data by selected family
-       filter(illinois_data, Family == input$family)
+       filter(full_data, Family == input$family)
     }
   })
 
@@ -198,7 +230,7 @@ ggplot(
 ggtitle(
   paste(
     plot_title(),
-    "surveyed relative population sizes in Illinois from",
+    "surveyed relative population sizes  from",
     input$time_range[1],
     "to",
     input$time_range[2],
