@@ -1,0 +1,293 @@
+---
+title: "USGS North American Breeding Bird Survey Data (1966-2019)"
+author: Alec Luro
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: column
+    vertical_layout: scroll
+    source_code: embed
+    theme: paper
+    logo: US-silhouette-48x48.png
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+# Load packages -------------------------------------------------------------
+library(flexdashboard)
+library(shiny)
+library(data.table)
+library(dtplyr)
+library(dplyr)
+library(magrittr)
+library(stringr)
+library(ggplot2)
+library(hrbrthemes)
+library(tidyr)
+
+
+```
+
+Bird survey trends {#section-bird-survey-trends}
+===================================== 
+
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+<br>
+
+```{r input_state_survey_subset}
+
+# Choice of all U.S. or individual state
+# States Surveyed
+states <-
+  c("All States", "ALABAMA", "ALASKA", "ARIZONA", "ARKANSAS", "CALIFORNIA", "COLORADO", 
+"CONNECTICUT", "DELAWARE", "FLORIDA", "GEORGIA", "IDAHO", "ILLINOIS", 
+"INDIANA", "IOWA", "KANSAS", "KENTUCKY", "LOUISIANA", "MAINE", 
+"MARYLAND", "MASSACHUSETTS", "MICHIGAN", "MINNESOTA", "MISSISSIPPI", 
+"MISSOURI", "MONTANA", "NORTH CAROLINA", "NORTH DAKOTA", "NEBRASKA", 
+"NEVADA", "NEW HAMPSHIRE", "NEW JERSEY", "NEW MEXICO", "NEW YORK", 
+"OHIO", "OKLAHOMA", "OREGON", "PENNSYLVANIA", "RHODE ISLAND", 
+"SOUTH CAROLINA", "SOUTH DAKOTA", "TENNESSEE", "TEXAS", "UTAH", 
+"VERMONT", "VIRGINIA", "WEST VIRGINIA", "WASHINGTON", "WISCONSIN", 
+"WYOMING")
+
+selectInput("state_choice", label = "State",
+            choices =  states,
+            selected = "All States")
+
+```
+
+```{r survey_data, include=FALSE}
+
+
+# Import data and subset  data -------------------------------------------------------------
+
+data <-
+    readRDS("data/complete_bbs_data.rds") %>%
+    lazy_dt %>%
+    filter(CountryNum == 840,
+           RunType == 1) %>% 
+    na.omit()
+  
+
+subset_data <-
+  eventReactive(input$state_choice,{
+    data %>%
+      {if(input$state_choice == "All States") . else filter(., State == input$state_choice)} %>% 
+    na.omit
+  })
+
+
+# Get number of unique routes completed per year
+routes_per_survey_year <-
+  reactive({
+    subset_data() %>%
+    group_by(Year) %>%
+    summarise(
+      routes_per_year = length(unique((RouteDataID))
+      )) %>%
+    as_tibble() 
+  })
+
+# Add survey counts weighted by number of routes completed for given year
+weighted_data <-
+  reactive({
+    subset_data() %>%
+    group_by(Year, English_Common_Name, Family) %>%
+    summarise(
+      total_birds = sum(SpeciesTotal)
+    ) %>%
+    as_tibble() %>% 
+    inner_join(.,
+               routes_per_survey_year(),
+               by = "Year") %>% 
+    mutate(weighted_total_birds = (total_birds/routes_per_year),
+           State = input$state_choice) %>% 
+    relocate(State, Year)
+  })
+
+
+# List of all species surveyed 
+species_list <-
+  reactive({
+  weighted_data() %>% 
+  distinct(English_Common_Name) %>% 
+  # drop unidentified birds
+  filter(!str_detect(English_Common_Name, "(?i)unid"),
+         !str_detect(English_Common_Name, "(?i)hybrid")) %>% 
+  # remove aliases for cleaner sorting
+  mutate(English_Common_Name = str_replace(English_Common_Name, " ?\\(.*\\) ?", "")) %>%
+  arrange(English_Common_Name) %>% 
+  pull(English_Common_Name)
+    
+  })
+
+
+# List of all families surveyed 
+family_list <-
+  reactive({
+    weighted_data() %>% 
+    pull(Family) %>%  
+    unique() %>% 
+    sort()
+  })
+
+
+```
+
+```{r input_survey_data_subset}
+
+# Allow choice of Family or individual species
+selectInput("taxonomic_level", label = "Taxon",
+            choices = c(Family = "choice_family", Species = "choice_species"),
+            selected = "choice_species")
+
+# Species choice (if Taxon == Species)
+conditionalPanel(
+  condition = "input.taxonomic_level == 'choice_species'",
+  selectInput("species", label = "Species",
+            choices = "",
+            selected = "")
+  )
+
+observeEvent(input$state_choice,{
+      updateSelectInput(session, "species",
+      choices = c("All species",species_list()),
+      selected = "All species"
+    )})
+
+# Family choice (if Taxon == Family)
+conditionalPanel(
+  condition = "input.taxonomic_level == 'choice_family'",
+  selectInput("family", label = "Family",
+              choices = "",
+              selected = "")
+)
+
+observeEvent(input$state_choice,{
+      updateSelectInput(session, "family",
+      choices = family_list(),
+      selected = family_list()[1]
+    )})
+
+
+# Choice for survey year range
+sliderInput("time_range", label = "Years:",
+            min = 1966, max = 2019, value = c(1966,2019),
+            sep = "")
+
+# Download data action
+downloadButton("download_data", label = "Download Data")
+
+downloadHandler(filename = function() {
+     paste(input$state_choice,
+            ifelse(input$taxonomic_level == "choice_species",
+                  input$species,
+                  input$family),
+           input$time_range[1],
+           input$time_range[2],
+           '.csv',
+           sep='-')
+   },
+     content = function(file) {
+     write.csv(plot_data(), file, row.names = FALSE)
+   }
+)
+
+```
+
+Data citation:
+Pardieck, K.L., Ziolkowski Jr., D.J., Lutmerding, M., Aponte, V.I., and Hudson, M-A.R., 2020, North American Breeding Bird Survey Dataset 1966 - 2019: U.S. Geological Survey data release, https://doi.org/10.5066/P9J6QUF6
+
+Column {.tabset} {data-height=3000}
+-----------------------------------------------------------------------
+
+### Species plot
+
+```{r plot_species, fig.height=8, fig.width=10}
+
+# Reactive function to subset data by Taxon (species or family) inputs
+plot_data <-
+  reactive({
+    # If selected Taxon == Species and input for species is not "All", filter data by selected single species
+    if(input$taxonomic_level == "choice_species"){
+      {if (!input$species == "All species") filter(weighted_data(), English_Common_Name == input$species) else weighted_data()} 
+    } else {
+      # If selected Taxon ==  Family, filter data by selected family
+       filter(weighted_data(), Family == input$family)
+    }
+  })
+
+# Reactive function to select plot title name input by Taxon inputs
+plot_title <-
+  reactive({
+    if(input$taxonomic_level == "choice_species"){input$species} else {input$family}
+  })
+
+# Make survey data plot
+renderPlot(
+  {
+  plot_data() %>% 
+  # get data for single species
+  filter(Year %in% input$time_range[1]:input$time_range[2]) %>%
+  group_by(Year) %>%
+  summarise("Total Birds Counted per Routes Surveyed" = sum(weighted_total_birds)) %>%
+  ungroup() %>%
+ggplot(
+  .,
+  aes(
+    x = Year,
+    y = `Total Birds Counted per Routes Surveyed`
+  )
+) +
+ggtitle(
+  paste(
+    plot_title(),
+    "surveyed relative population sizes in",
+    input$state_choice,
+    "from",
+    input$time_range[1],
+    "to",
+    input$time_range[2],
+    sep = " ")) +
+  geom_point() +
+  geom_smooth() +
+  scale_x_continuous(breaks = seq(1960, 2020, 5)) +
+  hrbrthemes::theme_ipsum_ps(
+    plot_title_size = 18,
+    axis_text_size = 14,
+    axis_title_size = 18
+  )
+    
+  })
+
+```
+
+
+U.S. Endangered Species List {#section-endangered-species}
+===================================== 
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+### [List of U.S. Endangered and Threatened Species](https://ecos.fws.gov/ecp/report/species-listings-by-tax-group?statusCategory=Listed&groupName=Birds)
+```{r endangered_species}
+us_endangered <-
+  read.csv("data/species-listings-by-tax-group-report.csv") %>% 
+  select(Common.Name,
+         Scientific.Name,
+         ESA.Listing.Status..) %>% 
+  rename(`Common Name` = Common.Name,
+         `Latin Name` = Scientific.Name,
+         Status = ESA.Listing.Status..) %>% 
+  # Remove any text in parentheses
+  mutate_if(is.character, ~str_replace(., " \\s*\\([^\\)]+\\)", "")) %>% 
+  filter(!str_detect(Status, "Experimental")) %>% 
+  arrange(`Latin Name`)
+
+DT::renderDataTable({
+  us_endangered
+})
+
+```
+
+

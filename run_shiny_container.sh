@@ -4,7 +4,7 @@
 echo "Building docker image"
 
 # Build docker image using docker buildkit ----
-DOCKER_BUILDKIT=1 docker build -t usgs-bbs-dashboard .
+DOCKER_BUILDKIT=1 docker build -t usgs-bbs-dashboard:latest .
 
 echo "USGS-BBS dashboard image ready!"
 

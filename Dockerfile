@@ -22,11 +22,15 @@ RUN apt-get update \
     hrbrthemes \
     data.table \
     dtplyr \
-    zip
+    zip 
+
+# Remove install files                       
+RUN apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 # Copy shiny app to image
 COPY USGS-BBS-dashboard.Rproj /srv/shiny-server/
-COPY illinois_birds_dashboard.Rmd /srv/shiny-server/
+COPY us_birds_dashboard.Rmd /srv/shiny-server/
+COPY US-silhouette-48x48.png /srv/shiny-server/
 COPY data /srv/shiny-server/data
 
 # select port
@@ -35,5 +39,9 @@ EXPOSE 3838
 # allow permission
 RUN chmod -R 755 /srv/
 
+# set non-root                       
+RUN useradd shiny_user
+USER shiny_user
+
 # run app
-CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/illinois_birds_dashboard.Rmd', , shiny_args = list(port = 3838, host = '0.0.0.0'))"]
+CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/us_birds_dashboard.Rmd', shiny_args = list(port = as.numeric(Sys.getenv('PORT')), host = '0.0.0.0'))"]

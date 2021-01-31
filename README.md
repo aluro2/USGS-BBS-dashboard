@@ -1,7 +1,7 @@
-# Birds of Illinois Project
+# USGS Breeding Bird Survey Dashboard
 
 ## Overview
-Our project uses data from the [USGS North American Breeding Bird Survey](https://www.pwrc.usgs.gov/bbs/), a systematic survey of birds that has been ongoing since 1966, to assess long term population trends of birds found in Illinois. Graphical summaries of the survey data for the U.S. and Canada are provided by the [Patuxent Wildlife Research Center](https://www.mbr-pwrc.usgs.gov/). Here, we provide detailed graphical summaries of the bird survey population data for the state of Illinois using an [*R Shiny*](https://shiny.rstudio.com/) html dashboard using the [*flexdashboard*](https://rmarkdown.rstudio.com/flexdashboard/) R package. 
+This project uses data from the [USGS North American Breeding Bird Survey](https://www.pwrc.usgs.gov/bbs/), a systematic survey of birds that has been ongoing since 1966, to assess long term population trends of birds found in the United States. Graphical summaries of the survey data for the U.S. and Canada are provided by the [Patuxent Wildlife Research Center](https://www.mbr-pwrc.usgs.gov/). Here, I provide graphical summaries of the bird survey population data for the United States using an [*R Shiny*](https://shiny.rstudio.com/) html dashboard using the [*flexdashboard*](https://rmarkdown.rstudio.com/flexdashboard/) R package. 
 
 ## Getting Started
 
@@ -15,16 +15,10 @@ Our project uses data from the [USGS North American Breeding Bird Survey](https:
     - Run ```R-scripts/01_make_complete_bbs_dataset.R``` to unzip and combine separate data files for all states surveyed, combine them into a single data file, add species and region names, and export and save the full survey data as ```data/complete_bbs_data.rds```.
 
 4) Open the interactive shiny dashboard
-    - Run ```R-markdown/illinois_birds_dashboard.Rmd``` to build and run the shiny dashboard with *flexdashboard*
+    - Run ```R-markdown/us_birds_dashboard.Rmd``` to build and run the shiny dashboard with *flexdashboard*
 
 ## Using the Dashboard
 
-### Bird Survey Trends
-![page1_functionality](Images/dashboard_species_page_functionality.gif)
-
-This dashboard provides survey trend data for a chosen bird family or species across a range of survey years. Survey observations are weighted by the number of routes surveyed for a given year and a loess curve is shown to illustrate survey trends across years. 
-
-+ Users can select to see the survey counts for bird families, all species surveyed, or a species for a chosen range of survey years.
 
 ### R environment
 ```
