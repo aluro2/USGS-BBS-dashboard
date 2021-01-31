@@ -1,9 +1,6 @@
 # BBS raw data
 bbs_data/
 
-# Streamlined data
-data/
-
 # History files
 .Rhistory
 .Rapp.history

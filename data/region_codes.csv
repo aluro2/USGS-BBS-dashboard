@@ -1,0 +1,98 @@
+"","CountryNum","StateNum","State","zip_states"
+"1",484,1,"Aguascalientes",NA
+"2",484,2,"Baja California",NA
+"3",484,3,"Baja California Sur",NA
+"4",484,4,"Campeche",NA
+"5",484,5,"Chiapas",NA
+"6",484,6,"Chihuahua",NA
+"7",484,7,"Coahuila",NA
+"8",484,8,"Colima",NA
+"9",484,9,"Distrito Federal",NA
+"10",484,10,"Durango",NA
+"11",484,11,"Guanajuato",NA
+"12",484,12,"Guerrero",NA
+"13",484,13,"Hidalgo",NA
+"14",484,14,"Jalisco",NA
+"15",484,15,"Mexico",NA
+"16",484,16,"_Michoacán",NA
+"17",484,17,"Morelos",NA
+"18",484,18,"Nayarit",NA
+"19",484,19,"Nuevo León",NA
+"20",484,20,"Oaxaca",NA
+"21",484,21,"Puebla",NA
+"22",484,22,"Querétaro",NA
+"23",484,23,"Quintana Roo",NA
+"24",484,24,"San Luis Potosí",NA
+"25",484,25,"Sinaloa",NA
+"26",484,26,"Sonora",NA
+"27",484,27,"Tabasco",NA
+"28",484,28,"Tamaulipas",NA
+"29",484,29,"Tlaxcala",NA
+"30",484,30,"Veracruz",NA
+"31",484,31,"Yucatán ",NA
+"32",484,32,"Zacatecas",NA
+"33",484,48,"Mexico Country",NA
+"34",840,2,"ALABAMA","Alabama.zip"
+"35",840,3,"ALASKA","Alaska.zip"
+"36",124,4,"Alberta","Alberta.zip"
+"37",840,6,"ARIZONA","Arizona.zip"
+"38",840,7,"ARKANSAS","Arkansa.zip"
+"39",124,11,"British Columbia","BritCol.zip"
+"40",840,14,"CALIFORNIA","Califor.zip"
+"41",840,17,"COLORADO","Colorad.zip"
+"42",840,18,"CONNECTICUT","Connect.zip"
+"43",840,21,"DELAWARE","Delawar.zip"
+"44",840,22,"District of Columbia",NA
+"45",840,25,"FLORIDA","Florida.zip"
+"46",840,27,"GEORGIA","Georgia.zip"
+"47",840,33,"IDAHO","Idaho.zip"
+"48",840,34,"ILLINOIS","Illinoi.zip"
+"49",840,35,"INDIANA","Indiana.zip"
+"50",840,36,"IOWA","Iowa.zip"
+"51",840,38,"KANSAS","Kansas.zip"
+"52",840,39,"KENTUCKY","Kentuck.zip"
+"53",840,42,"LOUISIANA","Louisia.zip"
+"54",840,44,"MAINE","Maine.zip"
+"55",124,45,"Manitoba","Manitob.zip"
+"56",840,46,"MARYLAND","Marylan.zip"
+"57",840,47,"MASSACHUSETTS","Massach.zip"
+"58",840,49,"MICHIGAN","Michiga.zip"
+"59",840,50,"MINNESOTA","Minneso.zip"
+"60",840,51,"MISSISSIPPI","Mississ.zip"
+"61",840,52,"MISSOURI","Missour.zip"
+"62",840,53,"MONTANA","Montana.zip"
+"63",840,54,"NEBRASKA","Nebrask.zip"
+"64",840,55,"NEVADA","Nevada.zip"
+"65",124,56,"New Brunswick","NBrunsw.zip"
+"66",840,58,"NEW HAMPSHIRE","NHampsh.zip"
+"67",840,59,"NEW JERSEY","NJersey.zip"
+"68",840,60,"NEW MEXICO","NMexico.zip"
+"69",840,61,"NEW YORK","NYork.zip"
+"70",124,57,"Newfoundland and Labrador","Newfoun.zip"
+"71",840,63,"NORTH CAROLINA","NCaroli.zip"
+"72",840,64,"NORTH DAKOTA","NDakota.zip"
+"73",124,43,"Northwest Territories","NWTerri.zip"
+"74",124,65,"Nova Scotia","NovaSco.zip"
+"75",124,62,"Nunavut","Nunavut.zip"
+"76",840,66,"OHIO","Ohio.zip"
+"77",840,67,"OKLAHOMA","Oklahom.zip"
+"78",124,68,"Ontario","Ontario.zip"
+"79",840,69,"OREGON","Oregon.zip"
+"80",840,72,"PENNSYLVANIA","Pennsyl.zip"
+"81",124,75,"Prince Edward Island","PEI.zip"
+"82",840,74,"PUERTO RICO",NA
+"83",124,76,"Quebec","Quebec.zip"
+"84",840,77,"RHODE ISLAND","RhodeIs.zip"
+"85",124,79,"Saskatchewan","SCaroli.zip"
+"86",840,80,"SOUTH CAROLINA","SDakota.zip"
+"87",840,81,"SOUTH DAKOTA","Saskatc.zip"
+"88",840,82,"TENNESSEE","Tenness.zip"
+"89",840,83,"TEXAS","Texas.zip"
+"90",840,85,"UTAH","Utah.zip"
+"91",840,87,"VERMONT","Vermont.zip"
+"92",840,88,"VIRGINIA","Virgini.zip"
+"93",840,89,"WASHINGTON","W_Virgi.zip"
+"94",840,90,"WEST VIRGINIA","Washing.zip"
+"95",840,91,"WISCONSIN","Wiscons.zip"
+"96",840,92,"WYOMING","Wyoming.zip"
+"97",124,93,"Yukon","Yukon.zip"
