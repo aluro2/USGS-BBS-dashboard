@@ -1,4 +1,4 @@
-# Birds of Illinois Project
+# USGS Breeding Bird Survey Dashboard
 
 ## Overview
 This project uses data from the [USGS North American Breeding Bird Survey](https://www.pwrc.usgs.gov/bbs/), a systematic survey of birds that has been ongoing since 1966, to assess long term population trends of birds found in the United States. Graphical summaries of the survey data for the U.S. and Canada are provided by the [Patuxent Wildlife Research Center](https://www.mbr-pwrc.usgs.gov/). Here, I provide graphical summaries of the bird survey population data for the United States using an [*R Shiny*](https://shiny.rstudio.com/) html dashboard using the [*flexdashboard*](https://rmarkdown.rstudio.com/flexdashboard/) R package. 
