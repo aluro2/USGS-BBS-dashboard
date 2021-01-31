@@ -26,7 +26,8 @@ RUN apt-get update \
 
 # Copy shiny app to image
 COPY USGS-BBS-dashboard.Rproj /srv/shiny-server/
-COPY illinois_birds_dashboard.Rmd /srv/shiny-server/
+COPY us_birds_dashboard.Rmd /srv/shiny-server/
+COPY US-silhouette-48x48.png /srv/shiny-server/
 COPY data /srv/shiny-server/data
 
 # select port
@@ -36,4 +37,4 @@ EXPOSE 3838
 RUN chmod -R 755 /srv/
 
 # run app
-CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/illinois_birds_dashboard.Rmd', , shiny_args = list(port = 3838, host = '0.0.0.0'))"]
+CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/us_birds_dashboard.Rmd', , shiny_args = list(port = 3838, host = '0.0.0.0'))"]

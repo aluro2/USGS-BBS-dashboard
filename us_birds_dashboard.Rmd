@@ -3,15 +3,15 @@ title: "USGS North American Breeding Bird Survey Data (1966-2019)"
 author: Alec Luro
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
+    orientation: column
+    vertical_layout: scroll
     source_code: embed
     theme: paper
-    #logo: illinois_logo_48x48px.png
+    logo: US-silhouette-48x48.png
 runtime: shiny
 ---
 
-```{r packages, include=FALSE}
+```{r global, include=FALSE}
 # Load packages -------------------------------------------------------------
 library(flexdashboard)
 library(shiny)
@@ -24,10 +24,12 @@ library(ggplot2)
 library(hrbrthemes)
 library(tidyr)
 
+
 ```
 
-Bird survey trends
+Bird survey trends {#section-bird-survey-trends}
 ===================================== 
+
 
 Column {.sidebar}
 -----------------------------------------------------------------------
@@ -58,40 +60,57 @@ selectInput("state_choice", label = "State",
 ```{r survey_data, include=FALSE}
 
 
-# Import data and subset Illinois data -------------------------------------------------------------
-full_data <-
+# Import data and subset  data -------------------------------------------------------------
+
+data <-
     readRDS("data/complete_bbs_data.rds") %>%
     lazy_dt %>%
     filter(CountryNum == 840,
            RunType == 1) %>% 
+    na.omit()
+  
+
+subset_data <-
+  eventReactive(input$state_choice,{
+    data %>%
+      {if(input$state_choice == "All States") . else filter(., State == input$state_choice)} %>% 
     na.omit
+  })
 
 
 # Get number of unique routes completed per year
 routes_per_survey_year <-
-  full_data %>%
-  group_by(Year) %>%
-  summarise(
-    routes_per_year = length(unique((RouteDataID))
-    )) %>%
-  as_tibble() 
+  reactive({
+    subset_data() %>%
+    group_by(Year) %>%
+    summarise(
+      routes_per_year = length(unique((RouteDataID))
+      )) %>%
+    as_tibble() 
+  })
 
 # Add survey counts weighted by number of routes completed for given year
-full_data <-
-  full_data %>%
-  group_by(Year, English_Common_Name, Family) %>%
-  summarise(
-    total_birds = sum(SpeciesTotal)
-  ) %>%
-  as_tibble() %>% 
-  inner_join(.,
-             routes_per_survey_year,
-             by = "Year") %>% 
-  mutate(weighted_total_birds = (total_birds/routes_per_year))
+weighted_data <-
+  reactive({
+    subset_data() %>%
+    group_by(Year, English_Common_Name, Family) %>%
+    summarise(
+      total_birds = sum(SpeciesTotal)
+    ) %>%
+    as_tibble() %>% 
+    inner_join(.,
+               routes_per_survey_year(),
+               by = "Year") %>% 
+    mutate(weighted_total_birds = (total_birds/routes_per_year),
+           State = input$state_choice) %>% 
+    relocate(State, Year)
+  })
+
 
 # List of all species surveyed 
 species_list <-
-  full_data %>% 
+  reactive({
+  weighted_data() %>% 
   distinct(English_Common_Name) %>% 
   # drop unidentified birds
   filter(!str_detect(English_Common_Name, "(?i)unid"),
@@ -100,13 +119,19 @@ species_list <-
   mutate(English_Common_Name = str_replace(English_Common_Name, " ?\\(.*\\) ?", "")) %>%
   arrange(English_Common_Name) %>% 
   pull(English_Common_Name)
+    
+  })
+
 
 # List of all families surveyed 
 family_list <-
-  full_data %>% 
+  reactive({
+    weighted_data() %>% 
     pull(Family) %>%  
     unique() %>% 
     sort()
+  })
+
 
 ```
 
@@ -114,94 +139,82 @@ family_list <-
 
 # Allow choice of Family or individual species
 selectInput("taxonomic_level", label = "Taxon",
-            c(Family = "choice_family", Species = "choice_species"))
+            choices = c(Family = "choice_family", Species = "choice_species"),
+            selected = "choice_species")
 
 # Species choice (if Taxon == Species)
 conditionalPanel(
   condition = "input.taxonomic_level == 'choice_species'",
   selectInput("species", label = "Species",
-            choices = c("All species", species_list))
-)
+            choices = "",
+            selected = "")
+  )
+
+observeEvent(input$state_choice,{
+      updateSelectInput(session, "species",
+      choices = c("All species",species_list()),
+      selected = "All species"
+    )})
 
 # Family choice (if Taxon == Family)
 conditionalPanel(
   condition = "input.taxonomic_level == 'choice_family'",
   selectInput("family", label = "Family",
-            choices = family_list)
+              choices = "",
+              selected = "")
 )
+
+observeEvent(input$state_choice,{
+      updateSelectInput(session, "family",
+      choices = family_list(),
+      selected = family_list()[1]
+    )})
+
 
 # Choice for survey year range
 sliderInput("time_range", label = "Years:",
             min = 1966, max = 2019, value = c(1966,2019),
             sep = "")
-```
 
+# Download data action
+downloadButton("download_data", label = "Download Data")
 
-Column {data-width=200}
------------------------------------------------------------------------
-### [List of Illinois Endangered and Threatened Species](https://www2.illinois.gov/dnr/ESPB/Documents/ET%20List%20Review%20and%20Revision/Illinois%20Endangered%20and%20Threatened%20Species.pdf)
-```{r endangered_species}
-
-illinois_endangered <-
-  tibble(Status = c(
-    rep("Endangered", 23),
-    rep("Threatened", 6)),
-         Species = c(
-           "Short-eared Owl",
-           "Upland Sandpiper",
-           "American Bittern",
-           "Swainson's Hawk",
-           "Piping Plover",
-           "Black Tern",
-           "Northern Harrier",
-           "Little Blue Heron",
-           "Snowy Egret",
-           "Common Gallinule",
-           "Loggerhead Shrike",
-           "Black Rail",
-           "Swainson's Warbler",
-           "Yellow-crowned Night Heron",
-           "Black-crowned Night Heron",
-           "Wilson's Phalarope",
-           "King Rail",
-           "Forster's Tern",
-           "Common Tern",
-           "Least Tern",
-           "Bewick's Wren",
-           "Greater Prairie-Chicken",
-           "Yellow-headed Blackbird",
-           "Chuck-will's-widow",
-           "Rufa Red Knot",
-           "Black-billed Cuckoo",
-           "Least Bittern",
-           "Osprey",
-           "Cerulean Warbler"
-         )) %>% 
-  arrange(Species)
-
-DT::renderDataTable({
-  illinois_endangered
-})
+downloadHandler(filename = function() {
+     paste(input$state_choice,
+            ifelse(input$taxonomic_level == "choice_species",
+                  input$species,
+                  input$family),
+           input$time_range[1],
+           input$time_range[2],
+           '.csv',
+           sep='-')
+   },
+     content = function(file) {
+     write.csv(plot_data(), file, row.names = FALSE)
+   }
+)
 
 ```
 
+Data citation:
+Pardieck, K.L., Ziolkowski Jr., D.J., Lutmerding, M., Aponte, V.I., and Hudson, M-A.R., 2020, North American Breeding Bird Survey Dataset 1966 - 2019: U.S. Geological Survey data release, https://doi.org/10.5066/P9J6QUF6
 
-
-Column
+Column {.tabset} {data-height=3000}
 -----------------------------------------------------------------------
 
 ### Species plot
-```{r plot_species}
+
+```{r plot_species, fig.height=8, fig.width=10}
 
 # Reactive function to subset data by Taxon (species or family) inputs
 plot_data <-
   reactive({
     # If selected Taxon == Species and input for species is not "All", filter data by selected single species
     if(input$taxonomic_level == "choice_species"){
-      {if (!input$species == "All species") filter(full_data, English_Common_Name == input$species) else full_data} 
+      {if (!input$species == "All species") filter(weighted_data(), English_Common_Name == input$species) else weighted_data()} 
     } else {
       # If selected Taxon ==  Family, filter data by selected family
-       filter(full_data, Family == input$family)
+       filter(weighted_data(), Family == input$family)
     }
   })
 
@@ -230,7 +243,9 @@ ggplot(
 ggtitle(
   paste(
     plot_title(),
-    "surveyed relative population sizes  from",
+    "surveyed relative population sizes in",
+    input$state_choice,
+    "from",
     input$time_range[1],
     "to",
     input$time_range[2],
@@ -247,3 +262,32 @@ ggtitle(
   })
 
 ```
+
+
+U.S. Endangered Species List {#section-endangered-species}
+===================================== 
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+### [List of U.S. Endangered and Threatened Species](https://ecos.fws.gov/ecp/report/species-listings-by-tax-group?statusCategory=Listed&groupName=Birds)
+```{r endangered_species}
+us_endangered <-
+  read.csv("data/species-listings-by-tax-group-report.csv") %>% 
+  select(Common.Name,
+         Scientific.Name,
+         ESA.Listing.Status..) %>% 
+  rename(`Common Name` = Common.Name,
+         `Latin Name` = Scientific.Name,
+         Status = ESA.Listing.Status..) %>% 
+  # Remove any text in parentheses
+  mutate_if(is.character, ~str_replace(., " \\s*\\([^\\)]+\\)", "")) %>% 
+  filter(!str_detect(Status, "Experimental")) %>% 
+  arrange(`Latin Name`)
+
+DT::renderDataTable({
+  us_endangered
+})
+
+```
+
+
