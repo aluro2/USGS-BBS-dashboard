@@ -44,4 +44,4 @@ RUN useradd shiny_user
 USER shiny_user
 
 # run app
-CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/us_birds_dashboard.Rmd', shiny_args = list(port = as.numeric(Sys.getenv('PORT')), host = '0.0.0.0'))"]
+CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/us_birds_dashboard.Rmd', shiny_args = list(port = 3838, host = '0.0.0.0'))"]

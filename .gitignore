@@ -46,3 +46,6 @@ vignettes/*.pdf
 .rstudio
 .local
 .config
+
+# Private dirs
+.keys
