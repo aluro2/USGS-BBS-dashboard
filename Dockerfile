@@ -28,7 +28,7 @@ RUN apt-get update \
 RUN apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 # Copy shiny app to image
-COPY USGS-BBS-dashboard.Rproj /srv/shiny-server/
+#COPY USGS-BBS-dashboard.Rproj /srv/shiny-server/
 COPY us_birds_dashboard.Rmd /srv/shiny-server/
 COPY US-silhouette-48x48.png /srv/shiny-server/
 COPY data /srv/shiny-server/data
