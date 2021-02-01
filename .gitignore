@@ -1,5 +1,6 @@
-# BBS raw data
+# Data
 bbs_data/
+data/complete_bbs_data.rds
 
 # History files
 .Rhistory

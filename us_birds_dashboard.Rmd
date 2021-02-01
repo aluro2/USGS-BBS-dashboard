@@ -40,7 +40,8 @@ Column {.sidebar}
 # Choice of all U.S. or individual state
 # States Surveyed
 states <-
-  c("All States", "ALABAMA", "ALASKA", "ARIZONA", "ARKANSAS", "CALIFORNIA", "COLORADO", 
+  c( #"All States",
+    "ALABAMA", "ALASKA", "ARIZONA", "ARKANSAS", "CALIFORNIA", "COLORADO", 
 "CONNECTICUT", "DELAWARE", "FLORIDA", "GEORGIA", "IDAHO", "ILLINOIS", 
 "INDIANA", "IOWA", "KANSAS", "KENTUCKY", "LOUISIANA", "MAINE", 
 "MARYLAND", "MASSACHUSETTS", "MICHIGAN", "MINNESOTA", "MISSISSIPPI", 
@@ -53,7 +54,8 @@ states <-
 
 selectInput("state_choice", label = "State",
             choices =  states,
-            selected = "All States")
+            #selected = "All States",
+            selected = "Illinois")
 
 ```
 
@@ -62,19 +64,21 @@ selectInput("state_choice", label = "State",
 
 # Import data and subset  data -------------------------------------------------------------
 
-data <-
-    readRDS("data/complete_bbs_data.rds") %>%
-    lazy_dt %>%
-    filter(CountryNum == 840,
-           RunType == 1) %>% 
-    na.omit()
-  
+# data <-
+#     readRDS("data/complete_bbs_data.rds") %>%
+#     lazy_dt %>%
+#     filter(CountryNum == 840,
+#            RunType == 1) %>% 
+#     na.omit()
+#   
 
 subset_data <-
   eventReactive(input$state_choice,{
-    data %>%
-      {if(input$state_choice == "All States") . else filter(., State == input$state_choice)} %>% 
-    na.omit
+    # data %>%
+    #   {if(input$state_choice == "All States") . else filter(., State == input$state_choice)} %>% 
+    # na.omit
+    readRDS(paste("data/state_data/", input$state_choice, ".rds", sep = ""))
+    
   })
 
 
