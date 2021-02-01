@@ -35,6 +35,7 @@ COPY data /srv/shiny-server/data
 
 # select port
 EXPOSE 3838
+EXPOSE 80
 
 # allow permission
 RUN chmod -R 755 /srv/
@@ -44,4 +45,4 @@ RUN useradd shiny_user
 USER shiny_user
 
 # run app
-CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/us_birds_dashboard.Rmd', shiny_args = list(port = 3838, host = '0.0.0.0'))"]
+CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/us_birds_dashboard.Rmd', shiny_args = list(port = 80, host = '0.0.0.0'))"]
