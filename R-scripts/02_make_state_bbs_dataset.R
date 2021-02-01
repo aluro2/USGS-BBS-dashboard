@@ -12,9 +12,11 @@ states <-
 
 purrr::imap(states, function(x,n){
 
+  state_name <- str_replace(n, " ", "_")
+
   saveRDS(
     object = x,
-    file = paste("data/state_data/", n, ".rds", sep = ""))
+    file = paste("data/state_data/", state_name, ".rds", sep = ""))
 
 })
 

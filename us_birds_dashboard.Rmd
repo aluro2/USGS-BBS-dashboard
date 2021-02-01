@@ -50,7 +50,8 @@ states <-
 "OHIO", "OKLAHOMA", "OREGON", "PENNSYLVANIA", "RHODE ISLAND", 
 "SOUTH CAROLINA", "SOUTH DAKOTA", "TENNESSEE", "TEXAS", "UTAH", 
 "VERMONT", "VIRGINIA", "WEST VIRGINIA", "WASHINGTON", "WISCONSIN", 
-"WYOMING")
+"WYOMING") %>% 
+  str_replace(., " ", "_")
 
 selectInput("state_choice", label = "State",
             choices =  states,
@@ -77,7 +78,12 @@ subset_data <-
     # data %>%
     #   {if(input$state_choice == "All States") . else filter(., State == input$state_choice)} %>% 
     # na.omit
-    readRDS(paste("data/state_data/", input$state_choice, ".rds", sep = ""))
+
+    file_paths <- file_paths <- list.files(path = "data", pattern = ".rds", recursive = T, full.names = T)
+    
+    filename <- file_paths[grep(input$state_choice, file_paths)]
+
+    readRDS(filename)
     
   })
 

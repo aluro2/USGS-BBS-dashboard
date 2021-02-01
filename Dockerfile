@@ -40,6 +40,9 @@ EXPOSE 80
 # allow permission
 RUN chmod -R 755 /srv/
 
+# set working directory
+WORKDIR /srv/shiny-server/
+
 # set non-root                       
 RUN useradd shiny_user
 USER shiny_user
