@@ -47,5 +47,6 @@ vignettes/*.pdf
 .local
 .config
 
-# Private dirs
+# Private dirs and files
 .keys
+ssh-aws-ec2.sh
