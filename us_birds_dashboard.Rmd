@@ -40,8 +40,7 @@ Column {.sidebar}
 # Choice of all U.S. or individual state
 # States Surveyed
 states <-
-  c( #"All States",
-    "ALABAMA", "ALASKA", "ARIZONA", "ARKANSAS", "CALIFORNIA", "COLORADO", 
+  c("All States", "ALABAMA", "ALASKA", "ARIZONA", "ARKANSAS", "CALIFORNIA", "COLORADO", 
 "CONNECTICUT", "DELAWARE", "FLORIDA", "GEORGIA", "IDAHO", "ILLINOIS", 
 "INDIANA", "IOWA", "KANSAS", "KENTUCKY", "LOUISIANA", "MAINE", 
 "MARYLAND", "MASSACHUSETTS", "MICHIGAN", "MINNESOTA", "MISSISSIPPI", 
@@ -50,13 +49,11 @@ states <-
 "OHIO", "OKLAHOMA", "OREGON", "PENNSYLVANIA", "RHODE ISLAND", 
 "SOUTH CAROLINA", "SOUTH DAKOTA", "TENNESSEE", "TEXAS", "UTAH", 
 "VERMONT", "VIRGINIA", "WEST VIRGINIA", "WASHINGTON", "WISCONSIN", 
-"WYOMING") %>% 
-  str_replace(., " ", "_")
+"WYOMING")
 
 selectInput("state_choice", label = "State",
             choices =  states,
-            #selected = "All States",
-            selected = "Illinois")
+            selected = "All States")
 
 ```
 
@@ -65,26 +62,19 @@ selectInput("state_choice", label = "State",
 
 # Import data and subset  data -------------------------------------------------------------
 
-# data <-
-#     readRDS("data/complete_bbs_data.rds") %>%
-#     lazy_dt %>%
-#     filter(CountryNum == 840,
-#            RunType == 1) %>% 
-#     na.omit()
-#   
+data <-
+    readRDS("data/sample_data.rds") %>%
+    lazy_dt %>%
+    filter(CountryNum == 840,
+           RunType == 1) %>% 
+    na.omit()
+  
 
 subset_data <-
   eventReactive(input$state_choice,{
-    # data %>%
-    #   {if(input$state_choice == "All States") . else filter(., State == input$state_choice)} %>% 
-    # na.omit
-
-    file_paths <- file_paths <- list.files(path = "data", pattern = ".rds", recursive = T, full.names = T)
-    
-    filename <- file_paths[grep(input$state_choice, file_paths)]
-
-    readRDS(filename)
-    
+    data %>%
+      {if(input$state_choice == "All States") . else filter(., State == input$state_choice)} %>% 
+    na.omit
   })
 
 

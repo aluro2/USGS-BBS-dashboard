@@ -10,13 +10,22 @@ states <-
   data %>%
   split(., .$State)
 
-purrr::imap(states, function(x,n){
+data_sample <-
+  purrr::map(states, ~sample_n(.x, 50)) %>%
+    bind_rows()
 
-  state_name <- str_replace(n, " ", "_")
+saveRDS(data_sample,
+          "data/sample_data.rds")
 
-  saveRDS(
-    object = x,
-    file = paste("data/state_data/", state_name, ".rds", sep = ""))
 
-})
+# Saves state data as seprate files
+# purrr::imap(states, function(x,n){
+#
+#   state_name <- str_replace(n, " ", "_")
+#
+#   saveRDS(
+#     object = x,
+#     file = paste("data/state_data/", state_name, ".rds", sep = ""))
+#
+# })
 
