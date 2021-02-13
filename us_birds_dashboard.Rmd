@@ -23,7 +23,8 @@ library(stringr)
 library(ggplot2)
 library(hrbrthemes)
 library(tidyr)
-
+library(dbplyr)
+library(DBI)
 
 ```
 
@@ -56,6 +57,12 @@ selectInput("state_choice", label = "State",
             selected = "All States")
 
 ```
+
+```{r sql_survey_data}
+
+
+```
+
 
 ```{r survey_data, include=FALSE}
 

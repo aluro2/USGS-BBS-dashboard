@@ -1,6 +1,7 @@
 # Data
 bbs_data/
 data/complete_bbs_data.rds
+data/usgs-bbs-1966-2019.sqlite
 
 # History files
 .Rhistory
