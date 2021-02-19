@@ -59,6 +59,28 @@ selectInput("state_choice", label = "State",
 ```
 
 ```{r sql_survey_data}
+# Function to query data using SQLite ---------------------
+source("R-scripts/04_query_bbs_sqlite_db.R")
+
+weighted_data <-
+ reactive({
+    get_bbs_data(
+      STATE = input$state_choice,
+      TAXON_LEVEL = input$taxonomic_level,
+      TAXON = ifelse(input$taxonomic_level == "Species", input$species, input$family),
+      YEAR = input$time_range[1]:input$time_range[2])
+  })
+
+species_list <-
+  eventReactive(input$state_choice,{
+    weighted_data()$species_list
+  })
+
+family_list <-
+  eventReactive(input$state_choice, {
+    weighted_data()$family_list
+  })
+
 
 
 ```
@@ -69,75 +91,75 @@ selectInput("state_choice", label = "State",
 
 # Import data and subset  data -------------------------------------------------------------
 
-data <-
-    readRDS("data/sample_data.rds") %>%
-    lazy_dt %>%
-    filter(CountryNum == 840,
-           RunType == 1) %>% 
-    na.omit()
-  
-
-subset_data <-
-  eventReactive(input$state_choice,{
-    data %>%
-      {if(input$state_choice == "All States") . else filter(., State == input$state_choice)} %>% 
-    na.omit
-  })
-
-
-# Get number of unique routes completed per year
-routes_per_survey_year <-
-  reactive({
-    subset_data() %>%
-    group_by(Year) %>%
-    summarise(
-      routes_per_year = length(unique((RouteDataID))
-      )) %>%
-    as_tibble() 
-  })
-
-# Add survey counts weighted by number of routes completed for given year
-weighted_data <-
-  reactive({
-    subset_data() %>%
-    group_by(Year, English_Common_Name, Family) %>%
-    summarise(
-      total_birds = sum(SpeciesTotal)
-    ) %>%
-    as_tibble() %>% 
-    inner_join(.,
-               routes_per_survey_year(),
-               by = "Year") %>% 
-    mutate(weighted_total_birds = (total_birds/routes_per_year),
-           State = input$state_choice) %>% 
-    relocate(State, Year)
-  })
-
-
-# List of all species surveyed 
-species_list <-
-  reactive({
-  weighted_data() %>% 
-  distinct(English_Common_Name) %>% 
-  # drop unidentified birds
-  filter(!str_detect(English_Common_Name, "(?i)unid"),
-         !str_detect(English_Common_Name, "(?i)hybrid")) %>% 
-  # remove aliases for cleaner sorting
-  mutate(English_Common_Name = str_replace(English_Common_Name, " ?\\(.*\\) ?", "")) %>%
-  arrange(English_Common_Name) %>% 
-  pull(English_Common_Name)
-    
-  })
-
-
-# List of all families surveyed 
-family_list <-
-  reactive({
-    weighted_data() %>% 
-    pull(Family) %>%  
-    unique() %>% 
-    sort()
-  })
+# data <-
+#     readRDS("data/sample_data.rds") %>%
+#     lazy_dt %>%
+#     filter(CountryNum == 840,
+#            RunType == 1) %>% 
+#     na.omit()
+#   
+# 
+# subset_data <-
+#   eventReactive(input$state_choice,{
+#     data %>%
+#       {if(input$state_choice == "All States") . else filter(., State == input$state_choice)} %>% 
+#     na.omit
+#   })
+# 
+# 
+# # Get number of unique routes completed per year
+# routes_per_survey_year <-
+#   reactive({
+#     subset_data() %>%
+#     group_by(Year) %>%
+#     summarise(
+#       routes_per_year = length(unique((RouteDataID))
+#       )) %>%
+#     as_tibble() 
+#   })
+# 
+# # Add survey counts weighted by number of routes completed for given year
+# weighted_data <-
+#   reactive({
+#     subset_data() %>%
+#     group_by(Year, English_Common_Name, Family) %>%
+#     summarise(
+#       total_birds = sum(SpeciesTotal)
+#     ) %>%
+#     as_tibble() %>% 
+#     inner_join(.,
+#                routes_per_survey_year(),
+#                by = "Year") %>% 
+#     mutate(weighted_total_birds = (total_birds/routes_per_year),
+#            State = input$state_choice) %>% 
+#     relocate(State, Year)
+#   })
+# 
+# 
+# # List of all species surveyed 
+# species_list <-
+#   reactive({
+#   weighted_data() %>% 
+#   distinct(English_Common_Name) %>% 
+#   # drop unidentified birds
+#   filter(!str_detect(English_Common_Name, "(?i)unid"),
+#          !str_detect(English_Common_Name, "(?i)hybrid")) %>% 
+#   # remove aliases for cleaner sorting
+#   mutate(English_Common_Name = str_replace(English_Common_Name, " ?\\(.*\\) ?", "")) %>%
+#   arrange(English_Common_Name) %>% 
+#   pull(English_Common_Name)
+#     
+#   })
+# 
+# 
+# # List of all families surveyed 
+# family_list <-
+#   reactive({
+#     weighted_data() %>% 
+#     pull(Family) %>%  
+#     unique() %>% 
+#     sort()
+#   })
 
 
 ```
@@ -146,12 +168,12 @@ family_list <-
 
 # Allow choice of Family or individual species
 selectInput("taxonomic_level", label = "Taxon",
-            choices = c(Family = "choice_family", Species = "choice_species"),
-            selected = "choice_species")
+            choices = c(Family = "Family", Species = "Species"),
+            selected = "Species")
 
 # Species choice (if Taxon == Species)
 conditionalPanel(
-  condition = "input.taxonomic_level == 'choice_species'",
+  condition = "input.taxonomic_level == 'Species'",
   selectInput("species", label = "Species",
             choices = "",
             selected = "")
@@ -159,13 +181,13 @@ conditionalPanel(
 
 observeEvent(input$state_choice,{
       updateSelectInput(session, "species",
-      choices = c("All species",species_list()),
+      choices = c("All species",weighted_data()$species_list),
       selected = "All species"
     )})
 
 # Family choice (if Taxon == Family)
 conditionalPanel(
-  condition = "input.taxonomic_level == 'choice_family'",
+  condition = "input.taxonomic_level == 'Family'",
   selectInput("family", label = "Family",
               choices = "",
               selected = "")
@@ -188,7 +210,7 @@ downloadButton("download_data", label = "Download Data")
 
 downloadHandler(filename = function() {
      paste(input$state_choice,
-            ifelse(input$taxonomic_level == "choice_species",
+            ifelse(input$taxonomic_level == "Species",
                   input$species,
                   input$family),
            input$time_range[1],
@@ -213,60 +235,60 @@ Column {.tabset} {data-height=3000}
 
 ```{r plot_species, fig.height=8, fig.width=10}
 
-# Reactive function to subset data by Taxon (species or family) inputs
-plot_data <-
-  reactive({
-    # If selected Taxon == Species and input for species is not "All", filter data by selected single species
-    if(input$taxonomic_level == "choice_species"){
-      {if (!input$species == "All species") filter(weighted_data(), English_Common_Name == input$species) else weighted_data()} 
-    } else {
-      # If selected Taxon ==  Family, filter data by selected family
-       filter(weighted_data(), Family == input$family)
-    }
-  })
-
-# Reactive function to select plot title name input by Taxon inputs
-plot_title <-
-  reactive({
-    if(input$taxonomic_level == "choice_species"){input$species} else {input$family}
-  })
-
-# Make survey data plot
-renderPlot(
-  {
-  plot_data() %>% 
-  # get data for single species
-  filter(Year %in% input$time_range[1]:input$time_range[2]) %>%
-  group_by(Year) %>%
-  summarise("Total Birds Counted per Routes Surveyed" = sum(weighted_total_birds)) %>%
-  ungroup() %>%
-ggplot(
-  .,
-  aes(
-    x = Year,
-    y = `Total Birds Counted per Routes Surveyed`
-  )
-) +
-ggtitle(
-  paste(
-    plot_title(),
-    "surveyed relative population sizes in",
-    input$state_choice,
-    "from",
-    input$time_range[1],
-    "to",
-    input$time_range[2],
-    sep = " ")) +
-  geom_point() +
-  geom_smooth() +
-  scale_x_continuous(breaks = seq(1960, 2020, 5)) +
-  hrbrthemes::theme_ipsum_ps(
-    plot_title_size = 18,
-    axis_text_size = 14,
-    axis_title_size = 18
-  )
-    
-  })
+# # Reactive function to subset data by Taxon (species or family) inputs
+# plot_data <-
+#   reactive({
+#     # If selected Taxon == Species and input for species is not "All", filter data by selected single species
+#     if(input$taxonomic_level == "Species"){
+#       {if (!input$species == "All species") filter(weighted_data(), English_Common_Name == input$species) else weighted_data()} 
+#     } else {
+#       # If selected Taxon ==  Family, filter data by selected family
+#        filter(weighted_data(), Family == input$family)
+#     }
+#   })
+# 
+# # Reactive function to select plot title name input by Taxon inputs
+# plot_title <-
+#   reactive({
+#     if(input$taxonomic_level == "Species"){input$species} else {input$family}
+#   })
+# 
+# # Make survey data plot
+# renderPlot(
+#   {
+#   plot_data() %>% 
+#   # get data for single species
+#   filter(Year %in% input$time_range[1]:input$time_range[2]) %>%
+#   group_by(Year) %>%
+#   summarise("Total Birds Counted per Routes Surveyed" = sum(weighted_total_birds)) %>%
+#   ungroup() %>%
+# ggplot(
+#   .,
+#   aes(
+#     x = Year,
+#     y = `Total Birds Counted per Routes Surveyed`
+#   )
+# ) +
+# ggtitle(
+#   paste(
+#     plot_title(),
+#     "surveyed relative population sizes in",
+#     input$state_choice,
+#     "from",
+#     input$time_range[1],
+#     "to",
+#     input$time_range[2],
+#     sep = " ")) +
+#   geom_point() +
+#   geom_smooth() +
+#   scale_x_continuous(breaks = seq(1960, 2020, 5)) +
+#   hrbrthemes::theme_ipsum_ps(
+#     plot_title_size = 18,
+#     axis_text_size = 14,
+#     axis_title_size = 18
+#   )
+#     
+#   })
 
 ```
 

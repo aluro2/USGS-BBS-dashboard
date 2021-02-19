@@ -7,16 +7,8 @@ library(DBI)
 
 # Get DB connection -------------------------------------------------------
 
-usgs_bbs_db <-
-  DBI::dbConnect(RSQLite::SQLite(), "data/usgs-bbs-1966-2019.sqlite")
-
-src_dbi(usgs_bbs_db)
-
-STATE <- "MAINE"
-TAXON_LEVEL  <- "Species"
-TAXON <- "American Robin"
-FAMILY <- "Turdidae"
-YEAR <- 1966:2019
+# Shows db tables
+#src_dbi(usgs_bbs_db)
 
 get_bbs_data <-
   function(STATE,
@@ -24,6 +16,11 @@ get_bbs_data <-
            TAXON,
            YEAR
   ){
+
+    # Connect to database
+    usgs_bbs_db <-
+      DBI::dbConnect(RSQLite::SQLite(), "data/usgs-bbs-1966-2019.sqlite")
+
     # Initial Year
     start <- YEAR[1]
 
@@ -32,8 +29,8 @@ get_bbs_data <-
       usgs_bbs_db %>%
       tbl("region_codes") %>%
       filter(CountryNum == 840) %>%
-      {if(STATE == "All States"). else filter(STATE ==STATE)} %>%
-      select(CountryNum, StateNum, State)
+      {if(STATE == "All States") . else filter(., State == STATE)} %>%
+      select(CountryNum, StateNum)
 
     # Routes (Runtype & RouteID)
     routes <-
@@ -45,12 +42,13 @@ get_bbs_data <-
       inner_join(state) %>%
       pull(RouteDataID)
 
-
     # Species/family
     taxon <-
       usgs_bbs_db %>%
       tbl("species_codes") %>%
-      filter(English_Common_Name == TAXON) %>%
+      {if(TAXON_LEVEL == "Species" &  TAXON == "All Species") .
+        if(TAXON_LEVEL == "Family") filter(., Family == TAXON)
+        else filter( ., English_Common_Name == TAXON)} %>%
       pull(AOU)
 
     # Data Entries
@@ -66,17 +64,36 @@ get_bbs_data <-
         total_birds = as.double(sum(SpeciesTotal, na.rm = T)/n_distinct(RouteDataID))
       ) %>%
       mutate(initial_birds = first(total_birds),
-             pct_from_initial = (total_birds- initial_birds)/initial_birds * 100)
+             pct_from_initial = (total_birds- initial_birds)/initial_birds)
 
-    return(subset_data)
+    # Species list
+    species_list <-
+      usgs_bbs_db %>%
+      tbl("states_bird_point_count") %>%
+      left_join(state,., by = "StateNum") %>%
+      distinct(AOU) %>%
+      left_join(., tbl(usgs_bbs_db, "species_codes")) %>%
+      pull(English_Common_Name) %>%
+      .[!str_detect(., "(?i)unid")] %>%
+      .[!str_detect(., "(?i)hybrid")] %>%
+      .[!str_detect(., " ?\\(.*\\) ?")] %>%
+      sort()
+
+    # Family list
+    family_list <-
+      usgs_bbs_db %>%
+      tbl("species_codes") %>%
+      filter(English_Common_Name %in% species_list) %>%
+      distinct(Family) %>%
+      pull() %>%
+      sort()
 
 
+
+    return(list(subset_data = as_tibble(subset_data),
+                species_list = species_list,
+                family_list = family_list))
+
+
+    DBI::dbDisconnect(usgs_bbs_db)
   }
-
-
-get_bbs_data(STATE = "All States",
-             TAXON_LEVEL = TAXON_LEVEL,
-             TAXON = TAXON,
-             YEAR = YEAR)
-
-DBI::dbDisconnect(usgs_bbs_db)
