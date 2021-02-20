@@ -1,4 +1,5 @@
 source("R-scripts/04_query_bbs_sqlite_db.R")
+source("R-scripts/05_summarize_data.R")
 
 system.time({
 
@@ -13,17 +14,27 @@ system.time({
 
 test <-
   get_bbs_data(
-    STATE = "MAINE",
+    STATE = "All States",
     TAXON_LEVEL = "Family",
-    TAXON = "Paridae",
+    TAXON = "Turdidae",
     YEAR = 1970:2020)
 
-as.tibble(test) %>%
+# Plot summary data (Percent change from initial year) --------------------
+test$subset_data %>%
+  summary_data() %>%
   ggplot(aes(x = Year, y = pct_from_initial)) +
   geom_hline(yintercept = 0, color = "red", size = 2) +
   geom_line(alpha = 0.3) +
   geom_smooth(span = 0.3) +
   scale_y_continuous(labels=scales::percent)
 
-test$species_list
+# Make output data file -----------------------------------
+test$subset_data %>%
+  left_join(test$taxon_codes, by = "AOU") %>%
+  left_join(test$route_coords, by = c("StateNum","Route")) %>%
+  select(Year, State, RouteName, Latitude, Longitude, English_Common_Name, SpeciesTotal) %>%
+  arrange(Year)
+
+
+
 

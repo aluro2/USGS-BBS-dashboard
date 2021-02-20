@@ -1,15 +1,3 @@
-
-# Load packages -----------------------------------------------------------
-library(tidyverse)
-library(dbplyr)
-library(DBI)
-
-
-# Get DB connection -------------------------------------------------------
-
-# Shows db tables
-#src_dbi(usgs_bbs_db)
-
 get_bbs_data <-
   function(STATE,
            TAXON_LEVEL,
