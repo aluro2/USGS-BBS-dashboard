@@ -14,10 +14,10 @@ system.time({
 
 test <-
   get_bbs_data(
-    STATE = "All States",
-    TAXON_LEVEL = "Family",
-    TAXON = "Turdidae",
-    YEAR = 1970:2020)
+    STATE = "ILLINOIS",
+    TAXON_LEVEL = "Species",
+    TAXON = "All Species",
+    YEAR = 1966:2020)
 
 # Plot summary data (Percent change from initial year) --------------------
 test$subset_data %>%
@@ -26,7 +26,10 @@ test$subset_data %>%
   geom_hline(yintercept = 0, color = "red", size = 2) +
   geom_line(alpha = 0.3) +
   geom_smooth(span = 0.3) +
-  scale_y_continuous(labels=scales::percent)
+  scale_y_continuous(labels=scales::percent) +
+  labs(
+    y = "Percent change in counted birds per route \n from initial year"
+  )
 
 # Make output data file -----------------------------------
 test$subset_data %>%

@@ -59,40 +59,44 @@ get_bbs_data <-
       taxon_codes %>%
       pull(AOU)
 
-    # Data Entries
-    subset_data <-
+    # Get raw data
+    get_data <-
       usgs_bbs_db %>%
       tbl("states_bird_point_count") %>%
-      filter(CountryNum == 840,
-             Year %in% YEAR,
+      filter(CountryNum == 840)
+
+    # Data Entries
+    subset_data <-
+      get_data %>%
+      filter(Year %in% YEAR,
              AOU %in% taxon,
              RouteDataID %in% routes)
 
-    # Species list
-    species_list <-
-      subset_data %>%
-      left_join(location_codes,., by = "StateNum") %>%
-      distinct(AOU) %>%
-      left_join(., tbl(usgs_bbs_db, "species_codes")) %>%
-      pull(English_Common_Name) %>%
-      .[!str_detect(., "(?i)unid")] %>%
-      .[!str_detect(., "(?i)hybrid")] %>%
-      .[!str_detect(., " ?\\(.*\\) ?")] %>%
-      sort()
-
-    # Family list
-    family_list <-
-      usgs_bbs_db %>%
-      tbl("species_codes") %>%
-      filter(English_Common_Name %in% species_list) %>%
-      distinct(Family) %>%
-      pull() %>%
-      sort()
+    # # Species list
+    # species_list <-
+    #   get_data %>%
+    #   left_join(location_codes,., by = "StateNum") %>%
+    #   distinct(AOU) %>%
+    #   left_join(., tbl(usgs_bbs_db, "species_codes")) %>%
+    #   pull(English_Common_Name) %>%
+    #   .[!str_detect(., "(?i)unid")] %>%
+    #   .[!str_detect(., "(?i)hybrid")] %>%
+    #   .[!str_detect(., " ?\\(.*\\) ?")] %>%
+    #   sort()
+    #
+    # # Family list
+    # family_list <-
+    #   usgs_bbs_db %>%
+    #   tbl("species_codes") %>%
+    #   filter(English_Common_Name %in% species_list) %>%
+    #   distinct(Family) %>%
+    #   pull() %>%
+    #   sort()
 
 
     return(list(subset_data = subset_data,
-                species_list = species_list,
-                family_list = family_list,
+                #species_list = species_list,
+                #family_list = family_list,
                 taxon_codes = taxon_codes,
                 route_coords = route_coords))
 
