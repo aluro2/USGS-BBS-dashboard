@@ -176,13 +176,6 @@ Pardieck, K.L., Ziolkowski Jr., D.J., Lutmerding, M., Aponte, V.I., and Hudson, 
 
 Column {.tabset} {data-height=3000}
 -----------------------------------------------------------------------
-### TEST
-```{r}
-shiny::renderPrint({
-  head(subset_data()$subset_data)
-})
-```
-
 
 ### Species plot
 
@@ -209,11 +202,19 @@ renderPlot(
   plot_data() %>%
   ggplot(aes(x = Year, y = pct_from_initial)) +
   geom_hline(yintercept = 0, color = "red", size = 2) +
-  geom_line(alpha = 0.3) +
-  geom_smooth(span = 0.3) +
+  geom_step(alpha = 0.3, color = "black") +
+  geom_smooth(span = 0.5, fill = "blue", alpha = 0.1) +
   scale_y_continuous(labels=scales::percent) +
   labs(
-    y = "Percent change in counted birds per route \n from initial year"
+    y = paste("Percent change from", 
+              ifelse(input$taxonomic_level == "Species",
+                     input$species,
+                     input$family),
+              # Line break
+              "\n",
+              "surveyed per route from",
+              input$time_range[1],
+              sep = " ")
   ) +
   scale_x_continuous(breaks = seq(1960, 2020, 5)) +
   hrbrthemes::theme_ipsum_ps(
