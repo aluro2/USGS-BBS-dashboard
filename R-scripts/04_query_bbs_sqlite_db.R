@@ -10,7 +10,7 @@ library(DBI)
 # Shows db tables
 #src_dbi(usgs_bbs_db)
 
-get_bbs_data <-
+query_bbs_sqlite_db <-
   function(STATE,
            TAXON_LEVEL,
            TAXON,
@@ -40,8 +40,10 @@ get_bbs_data <-
     taxon_codes <-
       usgs_bbs_db %>%
       tbl("species_codes") %>%
-      {if(TAXON_LEVEL == "Family") filter(., Family == TAXON)
-        else {if(TAXON == "All Species") . else filter( ., English_Common_Name == TAXON)} } %>%
+      {if(TAXON_LEVEL == "Species"){if(TAXON == "All Species") . else filter( ., English_Common_Name == TAXON)}
+        else if(TAXON_LEVEL == "Family") filter(., Family == TAXON) } %>%
+      # {if(TAXON_LEVEL == "Species" && TAXON == "All Species") .
+      #   else if(TAXON_LEVEL == "Family") filter(., Family == TAXON) else filter( ., English_Common_Name == TAXON) } %>%
       select(AOU, English_Common_Name, Family)
 
     # Routes (Runtype & RouteID)
@@ -94,11 +96,12 @@ get_bbs_data <-
     #   sort()
 
 
-    return(list(subset_data = subset_data,
-                #species_list = species_list,
-                #family_list = family_list,
-                taxon_codes = taxon_codes,
-                route_coords = route_coords))
+return(list(subset_data = subset_data,
+            #species_list = species_list,
+            #family_list = family_list,
+            taxon_codes = taxon_codes,
+            route_coords = route_coords))
+
 
 
     DBI::dbDisconnect(usgs_bbs_db)

@@ -3,7 +3,7 @@ source("R-scripts/05_summarize_data.R")
 
 system.time({
 
-    get_bbs_data(
+  query_bbs_sqlite_db(
       STATE = "MAINE",
       TAXON_LEVEL = "Family",
       TAXON = "Paridae",
@@ -13,10 +13,10 @@ system.time({
 })
 
 test <-
-  get_bbs_data(
-    STATE = "ILLINOIS",
+  query_bbs_sqlite_db(
+    STATE = "All States",
     TAXON_LEVEL = "Species",
-    TAXON = "All Species",
+    TAXON = "American Robin",
     YEAR = 1966:2020)
 
 # Plot summary data (Percent change from initial year) --------------------
