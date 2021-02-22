@@ -43,11 +43,11 @@ EXPOSE 80
 RUN chmod -R 755 /srv/
 
 # set working directory
-WORKDIR /srv/shiny-server/
+WORKDIR /srv/shiny-server/usgs-bbs-dashboard
 
 # set non-root                       
 RUN useradd shiny_user
 USER shiny_user
 
 # run app
-CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/us_birds_dashboard.Rmd', shiny_args = list(port = 3838, host = '0.0.0.0'))"]
+CMD ["R", "-e", "rmarkdown::run('/srv/shiny-server/usgs-bbs-dashboard/us_birds_dashboard.Rmd', shiny_args = list(port = 3838, host = '0.0.0.0'))"]
