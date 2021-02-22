@@ -11,6 +11,6 @@ echo "USGS-BBS dashboard image ready!"
 # Run Temporary Docker Container ----
 echo "Starting temporary docker container."
 
-docker run --rm -d -p 3838:3838 -v $(pwd):/srv/shiny-server/  --name usgs-bbs-dashboard-container-shiny  usgs-bbs-dashboard
+docker run --rm -d -p 3838:3838 -v $(pwd):/srv/shiny-server/usgs-bbs-dashboard  --name usgs-bbs-dashboard-container-shiny  usgs-bbs-dashboard
 
 echo "Container ready! Go to http://localhost:3838 (on Linux OS) or http://<your ip address here>:3838 (Windows and Mac OS) to enter Shiny session"
